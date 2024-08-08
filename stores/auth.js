@@ -3,40 +3,52 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import jwt_decode from 'jwt-decode'
+import { useRouter } from 'vue-router' // สำหรับการ redirect
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    token: null
+    token: null,
+    loading: false, // เพิ่ม state สำหรับติดตามสถานะการโหลด
+    error: null 
   }),
   getters: {
-    isAuthenticated: (state) => !!state.token, // ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
+    isAuthenticated: (state) => !!state.token, 
   },
   actions: {
     async login(identifierType, identifier, password) {
+      this.loading = true; // เริ่มการโหลด
+      this.error = null; // ล้าง error ก่อนหน้า
+
       try {
-        const response = await axios.post('/api/token/', {
+        const response = await useNuxtApp().$axios.post('/token/', {
           [identifierType]: identifier, 
           password
         })
 
         this.token = response.data.access;
-        this.user = jwt_decode(this.token); // ถอดรหัส JWT เพื่อดึงข้อมูลผู้ใช้
+        this.user = jwt_decode(this.token); 
 
-        // เก็บ token ใน local storage (หรือวิธีอื่นๆ ตามที่คุณต้องการ)
         localStorage.setItem('token', this.token);
 
-        return response.data; // ส่งคืนข้อมูล response หากต้องการใช้ใน component
+        // Redirect หลังจาก login สำเร็จ (คุณอาจต้องปรับแต่งเส้นทาง)
+        const router = useRouter();
+        router.push('/'); 
+
       } catch (error) {
-        // จัดการ error เช่น แสดงข้อความ error ให้ผู้ใช้
+        this.error = error.response?.data?.detail || 'เกิดข้อผิดพลาดในการล็อกอิน'; // เก็บข้อความ error
         console.error('Login failed:', error);
-        throw error; // ส่ง error ต่อเพื่อให้ component ที่เรียกใช้สามารถจัดการได้
+      } finally {
+        this.loading = false; // หยุดการโหลด
       }
     },
 
     async register(email, password, firstName, lastName) {
+      this.loading = true;
+      this.error = null;
+
       try {
-        const response = await axios.post('/api/users/register/', {
+        const response = await useNuxtApp().$axios.post('/users/', { // เปลี่ยนเป็น /users/ ตาม router
           email,
           password,
           first_name: firstName,
@@ -46,11 +58,13 @@ export const useAuthStore = defineStore('auth', {
         // หลังจาก register สำเร็จ คุณอาจต้องการ login ผู้ใช้โดยอัตโนมัติ หรือ redirect ไปยังหน้า login
         // await this.login('email', email, password); 
 
-        return response.data; // ส่งคืนข้อมูล response หากต้องการใช้ใน component
+        return response.data;
       } catch (error) {
-        // จัดการ error เช่น แสดงข้อความ error ให้ผู้ใช้
+        this.error = error.response?.data?.detail || 'เกิดข้อผิดพลาดในการลงทะเบียน';
         console.error('Registration failed:', error);
         throw error;
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -58,8 +72,14 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.token = null;
       localStorage.removeItem('token');
+
+      // Redirect หลังจาก logout (คุณอาจต้องปรับแต่งเส้นทาง)
+      const router = useRouter();
+      router.push('/login');
     },
 
-    // เพิ่ม actions อื่นๆ ตามต้องการ เช่น getUserProfile
+    async getUserProfile() {
+      // ... (เพิ่ม logic สำหรับดึงข้อมูล profile จาก API)
+    }
   }
 })

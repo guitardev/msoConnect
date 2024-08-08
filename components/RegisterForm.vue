@@ -16,6 +16,13 @@
     ></v-text-field>
 
     <v-text-field
+      v-model="confirmPassword"
+      label="ยืนยันรหัสผ่าน"
+      type="password"
+      required
+    ></v-text-field>
+
+    <v-text-field
       v-model="firstName"
       label="ชื่อ"
     ></v-text-field>
@@ -39,6 +46,7 @@ import { useAuthStore } from '~/stores/auth';
 const authStore = useAuthStore();
 const email = ref('');
 const password = ref('');
+const confirmPassword = ref('');
 const firstName = ref('');
 const lastName = ref('');
 
@@ -48,11 +56,17 @@ const error = computed(() => authStore.error);
 const emit = defineEmits(['register-success']);
 
 const register = async () => {
+  if (password.value !== confirmPassword.value) {
+    // จัดการกรณีที่รหัสผ่านไม่ตรงกัน
+    alert('รหัสผ่านไม่ตรงกัน');
+    return;
+  }
+
   try {
     const registerData = await authStore.register(email.value, password.value, firstName.value, lastName.value);
-    emit('register-success', registerData); // ส่ง event เมื่อ register สำเร็จ
+    emit('register-success', registerData);
   } catch (error) {
-    // Error จะถูกจัดการใน authStore แล้ว
+    // Error handling is done in the authStore
   }
 };
 </script>

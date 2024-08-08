@@ -5,20 +5,25 @@
     <v-row justify="center">
       <v-col cols="12" sm="8" md="6">
         <h1 class="text-h3 mb-4">ข้อมูลส่วนตัว</h1>
-        <ProfileCard :user="user" @edit-profile="handleEditProfile" />
+        <ProfileCard :user="user" @edit-profile="handleEditProfile" /> 
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from "~/stores/auth";
-import { computed } from "vue";
-import ProfileCard from "~/components/ProfileCard.vue";
+import { useAuthStore } from '~/stores/auth';
+import { computed } from 'vue';
+import ProfileCard from '~/components/ProfileCard.vue';
+import { useHead } from '#head' // เพิ่ม useHead เพื่อจัดการ meta tags
 
 definePageMeta({
-  middleware: "auth",
-});
+  middleware: 'auth' 
+})
+
+useHead({
+  title: 'โปรไฟล์'
+})
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
@@ -30,7 +35,7 @@ const handleEditProfile = () => {
 // ดึงข้อมูล profile เมื่อเข้าสู่หน้านี้ (คุณอาจต้องปรับแต่ง logic นี้)
 onMounted(async () => {
   if (authStore.isAuthenticated) {
-    await authStore.getUserProfile();
+    await authStore.getUserProfile(); 
   }
 });
 </script>

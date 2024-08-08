@@ -1,3 +1,5 @@
+// pages/login.vue
+
 <template>
   <v-container v-if="!isAuthenticated">
     <v-row justify="center">
@@ -15,7 +17,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
 import { computed } from 'vue';
-import { useRouter } from 'vue-router'; // สำหรับการ redirect
+import { useRouter } from 'vue-router'; 
 import LoginForm from '~/components/LoginForm.vue';
 
 const authStore = useAuthStore();
@@ -25,10 +27,9 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
 const authError = computed(() => authStore.error);
 
 const handleLoginSuccess = () => {
-  router.push('/'); // หรือไปยังหน้าอื่นๆ ตามต้องการ
+  router.push('/'); 
 };
 
-// ถ้าผู้ใช้ล็อกอินแล้ว ให้ redirect ไปยังหน้าหลัก
 if (isAuthenticated.value) {
   router.push('/');
 }

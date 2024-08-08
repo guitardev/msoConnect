@@ -1,3 +1,5 @@
+// pages/register.vue
+
 <template>
   <v-container>
     <v-row justify="center">
@@ -24,7 +26,6 @@ const router = useRouter();
 const authError = computed(() => authStore.error);
 
 const handleRegisterSuccess = () => {
-  // เพิ่ม logic สำหรับการ redirect หรือแสดงผลลัพธ์หลัง register สำเร็จ เช่น
-  router.push('/login'); // Redirect ไปยังหน้า login หลังจาก register สำเร็จ
+  router.push('/login'); 
 };
 </script>

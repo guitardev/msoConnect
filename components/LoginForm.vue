@@ -1,67 +1,44 @@
-// components/LoginForm.vue
-
 <template>
-  <v-form @submit.prevent="login">
-    <v-select
-      v-model="identifierType"
-      :items="identifierTypes"
-      label="ประเภทการเข้าสู่ระบบ"
-      required
-    ></v-select>
-
-    <v-text-field
-      v-model="identifier"
-      :label="identifierTypeLabel"
-      required
-    ></v-text-field>
-
-    <v-text-field
-      v-model="password"
-      label="รหัสผ่าน"
-      type="password"
-      required
-    ></v-text-field>
-
-    <v-btn type="submit" color="primary" :loading="isLoading">เข้าสู่ระบบ</v-btn>
-    <div v-if="error" class="error--text mt-2">
-      {{ error }}
+  <form @submit.prevent="register">
+    <div>
+      <label for="email">Email:</label>
+      <input type="email" id="email" v-model="formData.email">
     </div>
-  </v-form>
+    <div>
+      <label for="password">Password:</label>
+      <input type="password" id="password" v-model="formData.password">
+    </div>
+    <div>
+      <label for="first_name">First Name:</label>
+      <input type="text" id="first_name" v-model="formData.first_name">
+    </div>
+    <div>
+      <label for="last_name">Last Name:</label>
+      <input type="text" id="last_name" v-model="formData.last_name">
+    </div>
+    <button type="submit">Register</button>
+  </form>
 </template>
 
-<script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useAuthStore } from '~/stores/auth';
-import { LoginMethod } from '~/types'; // Import type definitions if you have them
+<script setup>
+import { ref } from 'vue';
+import { useAuthStore } from '~/stores/auth'; // สมมติว่าคุณมี useAuthStore สำหรับจัดการ authentication
 
 const authStore = useAuthStore();
-const identifierType = ref(LoginMethod.EMAIL); // Default to email login
-const identifier = ref('');
-const password = ref('');
-
-const isLoading = computed(() => authStore.loading);
-const error = computed(() => authStore.error);
-
-const identifierTypes = [
-  { text: 'อีเมล', value: LoginMethod.EMAIL },
-  { text: 'หมายเลขบัตรประชาชน', value: LoginMethod.NATIONAL_ID },
-  { text: 'เบอร์โทรศัพท์', value: LoginMethod.PHONE_NUMBER },
-];
-
-const identifierTypeLabel = computed(() => {
-  const selectedType = identifierTypes.find(type => type.value === identifierType.value);
-  return selectedType ? selectedType.text : '';
+const formData = ref({
+  email: '',
+  password: '',
+  first_name: '',
+  last_name: '',
 });
 
-const emit = defineEmits(['login-success']);
-
-const login = async () => {
+const register = async () => {
   try {
-    const loginData = await authStore.login(identifierType.value, identifier.value, password.value);
-    emit('login-success', loginData);
+    await authStore.register(formData.value);
+    // ทำอะไรบางอย่างหลังจากลงทะเบียนสำเร็จ เช่น redirect ไปยังหน้า login
   } catch (error) {
-    // Error handling is done in the authStore
+    // จัดการข้อผิดพลาด เช่น แสดง error message
+    console.error(error);
   }
 };
 </script>
-

@@ -1,41 +1,28 @@
-// pages/profile.vue
-
 <template>
-  <v-container v-if="user">
-    <v-row justify="center">
-      <v-col cols="12" sm="8" md="6">
-        <h1 class="text-h3 mb-4">ข้อมูลส่วนตัว</h1>
-        <ProfileCard :user="user" @edit-profile="handleEditProfile" /> 
-      </v-col>
-    </v-row>
-  </v-container>
+  <div v-if="user">
+    <h1>Welcome, {{ user.first_name }} {{ user.last_name }}!</h1>
+    <p>Email: {{ user.email }}</p>
+    </div>
+  <div v-else>
+    <p>Loading user profile...</p> 
+  </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { useAuthStore } from '~/stores/auth';
-import { computed } from 'vue';
-import ProfileCard from '~/components/ProfileCard.vue';
-import { useHead } from '#head' // เพิ่ม useHead เพื่อจัดการ meta tags
-
-definePageMeta({
-  middleware: 'auth' 
-})
-
-useHead({
-  title: 'โปรไฟล์'
-})
+import { onMounted } from 'vue';
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 
-const handleEditProfile = () => {
-  // เพิ่ม logic สำหรับการแก้ไข profile
-};
-
-// ดึงข้อมูล profile เมื่อเข้าสู่หน้านี้ (คุณอาจต้องปรับแต่ง logic นี้)
 onMounted(async () => {
-  if (authStore.isAuthenticated) {
-    await authStore.getUserProfile(); 
+  if (!user.value) { 
+    try {
+      await authStore.fetchUserProfile();
+    } catch (error) {
+      // Handle error if fetching user profile fails
+      console.error('Error fetching user profile:', error);
+    }
   }
 });
 </script>
